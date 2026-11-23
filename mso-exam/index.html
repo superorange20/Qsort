@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>MSO 能力评核模拟试卷</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #1a1d24;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --line: #2a2f3a;
+      --accent: #4c8bf5;
+      --ok: #3dd68c;
+      --bad: #f07178;
+      --warn: #e6b450;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang HK", "Noto Sans TC", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 16px 14px 80px; }
+    h1 { font-size: 1.35rem; margin: 0 0 6px; }
+    .sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 14px; }
+    .bar {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(15,17,21,.94);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 0 12px;
+      margin: 0 -14px 14px;
+      padding-left: 14px; padding-right: 14px;
+    }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+    .stat {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 10px; padding: 8px;
+    }
+    .stat b { display: block; font-size: 1.05rem; }
+    .stat span { color: var(--muted); font-size: 0.75rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    button, .chip {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .chip.on { border-color: var(--accent); color: var(--accent); }
+    .note {
+      border: 1px solid var(--line);
+      background: #151922;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 14px;
+      font-size: 0.9rem;
+    }
+    .note.ok { border-color: #2a5a40; }
+    .note.warn { border-color: #5a4a20; }
+    .mod-title { margin: 22px 0 10px; font-size: 1.05rem; }
+    .q {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .q-head { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+    .pill {
+      flex: 0 0 auto;
+      font-size: 0.75rem;
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .pill.saved { color: var(--accent); border-color: #35598f; }
+    .pill.ok { color: var(--ok); border-color: #2a5a40; }
+    .pill.bad { color: var(--bad); border-color: #5a3038; }
+    .items { color: var(--muted); font-size: 0.92rem; margin: 8px 0 10px; }
+    .choice {
+      display: block; width: 100%; text-align: left;
+      margin: 6px 0; padding: 10px 12px;
+      border-radius: 10px; border: 1px solid var(--line);
+      background: #12151c; color: var(--text);
+    }
+    .choice.active { border-color: var(--accent); background: #182235; }
+    .choice.correct { border-color: var(--ok); background: #14241c; }
+    .choice.wrong { border-color: var(--bad); }
+    .tip { margin-top: 8px; color: var(--muted); font-size: 0.86rem; }
+    .module-result { margin: 6px 0; font-size: 0.92rem; }
+    .toast {
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+      background: #22304a; color: #fff; padding: 8px 14px; border-radius: 999px;
+      font-size: 0.85rem; opacity: 0; pointer-events: none; transition: .2s;
+      z-index: 50;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="bar">
+      <h1>MSO 能力评核模拟试卷</h1>
+      <div class="sub">35题 · 7单元 · 官方组合题型 · 进度自动保存在本机浏览器</div>
+      <div class="stats">
+        <div class="stat"><b id="sAnswered">0/35</b><span>已作答</span></div>
+        <div class="stat"><b id="sScore">—</b><span>总分</span></div>
+        <div class="stat"><b id="sModules">—</b><span>单元门槛</span></div>
+        <div class="stat"><b id="sResult">作答中</b><span>总评</span></div>
+      </div>
+      <div class="actions" id="filters"></div>
+      <div class="actions" style="margin-top:8px">
+        <button class="primary" id="btnSubmit" disabled>交卷并计分</button>
+        <button id="btnTips" hidden>显示解析</button>
+        <button id="btnWrong" hidden>只看错题</button>
+        <button id="btnContinue">只看未答题</button>
+        <button id="btnReset">清空重做…</button>
+      </div>
+    </div>
+
+    <div class="note ok" id="saveNote">进度会自动保存到本机浏览器。关掉页面再打开，可继续做。</div>
+    <div class="note warn" id="resultBox" hidden></div>
+    <div id="paper"></div>
+  </div>
+  <div class="toast" id="toast">已保存</div>
+
+  <script>
+    const STORAGE_KEY = "mso_exam_v1_orange";
+    const STD = ["a) 1、2及3", "b) 1、2及4", "c) 2、3及4", "d) 1、3及4", "e) 以上皆是"];
+    const STAGES = ["a) 1、2及3", "b) 2、3及4", "c) 1、3及4", "d) 1、2及5", "e) 3、4及5"];
+    const KEYS = ["A", "B", "C", "D", "E"];
+    const MODULES = [
+      "单元一　打击洗钱及恐怖分子资金筹集与打击扩散资金筹集的常识",
+      "单元二　《打击洗钱条例》第1至7部",
+      "单元三　《打击洗钱条例》的附表",
+      "单元四　海关颁布的指引",
+      "单元五　系统及管控措施(i)　机构层面的管治及策略",
+      "单元六　系统及管控措施(ii)　打击洗钱及恐怖分子资金筹集的管控范畴",
+      "单元七　系统及管控措施(iii)　证明符合规定及监察合规水平",
+    ];
+
+    const QUESTIONS = [
+      {id:1,module:1,stem:"何谓洗钱的3个常见阶段？",items:["分层交易","识别","整合","存放","筹集"],answer:2,variant:"stages",tip:"存放→分层→整合。识别、筹集不是三阶段。"},
+      {id:2,module:1,stem:"关于恐怖分子资金筹集，下列哪项正确？",items:["用以资助恐怖活动的资金可以来自合法来源","资金来源必然全属犯罪得益","重点在于资金被用于资助恐怖活动或恐怖分子","只有跨境汇款才可能涉及该风险"],answer:3,tip:"1与3正确；可用合法资金，不限跨境。"},
+      {id:3,module:1,stem:"关于扩散资金筹集，下列哪项正确？",items:["关乎大规模毁灭武器相关扩散活动筹集资金","MSO亦须关注金融制裁及名单筛查","仅适用于银行，MSO可豁免","相关风险可纳入整体制裁／名单管控"],answer:1,tip:"1、2、4正确；MSO不能豁免。"},
+      {id:4,module:1,stem:"下列哪些属于常见洗钱／恐怖融资红旗？",items:["客户拒绝或不愿提供合理身分证明","交易模式与客户背景明显不符","客户要求拆分交易以规避尽职审查门槛","客户主动提供清晰资金来源说明并配合核验"],answer:0,tip:"1–3是红旗；4不是。"},
+      {id:5,module:1,stem:"关于「以风险为本」方法，下列哪项正确？",items:["按已识别风险高低分配管控资源","对所有客户一律执行完全相同、不可调整的措施","高风险情况应采取加强措施","低风险情况在符合规定下可采取简化措施"],answer:3,tip:"1、3、4正确；不是一刀切。"},
+      {id:6,module:2,stem:"关于金钱服务经营者发牌制度，下列哪项正确？",items:["香港海关是规管金钱服务经营者的有关当局","任何人须在经营金钱服务前向关长申请牌照","无牌经营属刑事罪行","即使申请被拒，已缴费用一般仍可获退还"],answer:0,tip:"费用不论结果概不退还。"},
+      {id:7,module:2,stem:"有关金钱服务经营者持牌人经营金钱服务的情况，下列哪项正确？",items:["持牌人可自由选择是否在指明处所展示牌照","如处所属住宅处所，须取得每名占用人书面同意","与牌照申请有关的详情改变，须在一个月内书面具报","持牌人如拟停止经营金钱服务，须在停业日期前书面具报"],answer:2,tip:"2、3、4正确；须展示牌照。"},
+      {id:8,module:2,stem:"关长在批给牌照前，须信纳下列哪些人属适当人选？",items:["申请人属个人：该个人及每名最终拥有人","申请人属合伙：每名合伙人及每名最终拥有人","申请人属法团：每名董事及每名最终拥有人","仅洗钱报告主任须属适当人选，董事无须"],answer:0,tip:"1–3正确。"},
+      {id:9,module:2,stem:"关于金钱服务经营者牌照有效期及续期，下列哪项正确？",items:["正常来说，所批给牌照的有效期为两年","持牌人须在牌照期满前45日或之前申请续期","海关一般会在期满前约90日发出提示通知","续期申请被拒后，已缴费用通常可自动退还"],answer:0,tip:"1–3正确；费用不退。"},
+      {id:10,module:2,stem:"关于持牌人停业安排，下列哪项正确？",items:["须在停业日期前藉书面向关长具报意向及停业日期","须在自停业日期起计7日内将牌照交回关长","口头通知海关后即可继续以牌照名义招揽客户至届满","无合理辩解而违反停业具报规定可构成罪行"],answer:1,tip:"1、2、4正确。"},
+      {id:11,module:3,stem:"关于金钱服务经营者持牌人的法定客户尽职审查规定，下列哪项正确？",items:["识别客户身分，及根据可靠及独立来源核实","不得开立或维持匿名户口","须持续监察交易是否符合对客户的认知","进行相等于$8,000或以上汇款交易前，须核实汇款人身分"],answer:4,tip:"以上皆是。"},
+      {id:12,module:3,stem:"金钱服务经营者须在下列哪些情况就客户执行尽职审查措施？",items:["在与客户建立业务关系之前","为客户执行总值相等于$120,000或以上的非经常交易之前","为客户执行相等于$8,000或以上的电传转帐／汇款之前","怀疑涉及洗钱／恐怖融资时（不论是否达门槛）"],answer:4,tip:"以上皆是。"},
+      {id:13,module:3,stem:"关于备存纪录的法定规定，下列哪项正确？",items:["交易纪录一般须自交易完成日起计备存6年","客户身分纪录须在业务关系存续期间备存，并自关系终止日起计备存6年","关长可以书面通知要求备存更长期间的指定纪录","交易完成后满1年即可销毁全部客户身分核证文件"],answer:0,tip:"1–3正确。"},
+      {id:14,module:3,stem:"就属法人的客户执行尽职审查时，一般须收集下列哪项识别资料？",items:["注册、成立或登记的日期","注册、成立或登记的地点","公司秘书（作为必然必收的识别资料）","主要营业地点"],answer:1,tip:"1、2、4正确；公司秘书非必然必收。"},
+      {id:15,module:3,stem:"关于法团的「最终拥有人」，下列哪项正确？",items:["直接或间接拥有或控制该法团已发行股本的25%以上的个人","直接或间接有权行使该法团成员大会上投票权的25%以上的个人","可行使对该法团管理最终控制权的个人","仅指持股超过75%的单一股东"],answer:0,tip:"1–3正确。"},
+      {id:16,module:4,stem:"金钱服务经营者进行机构层面的洗钱／恐怖分子资金筹集风险评估时，应顾及下列哪类因素？",items:["目标市场及客户类别","业务盈利能力","业务性质、规模、多元程度及复杂程度","交付渠道"],answer:3,tip:"1、3、4正确；盈利能力不是必要因素。"},
+      {id:17,module:4,stem:"关于金钱服务经营者持牌人的本地管理办事处规定，下列哪项正确？",items:["无论持牌人会或不会在特定处所经营，都一律必须另设本地管理办事处","本地管理办事处须驻有合规主任、独资经营者、合伙人、董事或最终拥有人","本地管理办事处可让海关人员亲身前往及以电话联络","如未能维持本地管理办事处，将可能导致暂时吊销及撤销牌照"],answer:2,tip:"2、3、4正确；无特定处所经营时才必须维持LMO。"},
+      {id:18,module:4,stem:"为履行法定的可疑交易举报责任，适当的制度须包括：",items:["委任一名洗钱报告主任","向洗钱报告主任报告前，先由前线人员筛选内部报告","就内部报告、向财富情报组作出报告及防止通风报讯执行清晰政策程序","备存内部报告及可疑交易报告的妥善纪录"],answer:3,tip:"1、3、4正确；前线不可先筛选。"},
+      {id:19,module:4,stem:"关于合规主任及洗钱报告主任，下列哪项正确？",items:["合规主任作为监督AML制度及合规措施的中心点","洗钱报告主任作为报告可疑交易的中央联络点","除非由独资经营者、合伙人、董事或最终拥有人兼任，否则须为正式雇员","可由秘书公司职员完全外判担任，而无须属申请人雇员"],answer:0,tip:"1–3正确。"},
+      {id:20,module:4,stem:"关于用作经营金钱服务的特定处所，下列哪项正确？",items:["纯住宅楼宇内的处所一般被视为不适合登记","位于混合式商住楼宇内的处所，须取得每名占用人书面同意","特定处所招牌所展示的业务名称应与商业登记证相符","即使另一名金钱服务经营者已占用该处所经营，新申请人仍可同时登记同一处所"],answer:0,tip:"1–3正确。"},
+      {id:21,module:5,stem:"关于金钱服务经营者高级管理层的责任，下列哪项正确？",items:["应核准机构的AML风险取向及相关政策","应确保配备足够资源以落实有效管控","把全部合规责任转嫁予前线员工后，高级管理层即可完全免责","应定期检视制度是否足够及有效"],answer:1,tip:"1、2、4正确。"},
+      {id:22,module:5,stem:"关于能力评核安排，下列哪项正确？",items:["高级管理层中必须有最少一名成员取得合格成绩","能力评核成绩在评定适当人选资格时占相当比重","同属一间公司的应考者必须应考同一时段","任何前线柜员均可不经提名自行应考并作为公司合格资格"],answer:0,tip:"1–3正确。"},
+      {id:23,module:5,stem:"关于能力评核的合格标准及模式，下列哪项正确？",items:["试卷共有35条选择题，须于1小时15分钟内完成","分为7个单元，每个单元有5题","每个单元不可答错超过两题，且总分须达25分或以上","只要总分达25分，即使某一单元全错仍属合格"],answer:0,tip:"1–3正确；双门槛须同时满足。"},
+      {id:24,module:5,stem:"金钱服务经营者的AML制度，在机构管治层面通常应包括：",items:["经高级管理层核准的政策、程序及管控措施","委任合规主任及洗钱报告主任","与业务风险相称的独立检测／审核安排","完全依赖员工个人常识而无须备存成文政策"],answer:0,tip:"1–3正确。"},
+      {id:25,module:5,stem:"关于新牌照申请的能力评核时限，下列哪项正确？",items:["合资格人士须在与海关人员会面当日起计30日内应考","如不及格，可获另一次机会于成绩通知发出当日起计30日后再次应考","未应考或未合格可能导致牌照申请被拒绝","可在获发牌照多年后才首次安排应考"],answer:0,tip:"1–3正确。"},
+      {id:26,module:6,stem:"客户尽职审查措施一般包括下列哪些？",items:["识别客户的身分，并采取合理措施核证客户的身分","识别实益拥有人的身分，并采取合理措施核证","如属业务关系，取得有关业务关系的目的及拟具有的性质的资料","对为客户执行的交易进行持续监察"],answer:4,tip:"以上皆是。"},
+      {id:27,module:6,stem:"下列哪些情况应考虑采取更严格的尽职审查措施？",items:["客户或实益拥有人属高风险","涉及政治人物并构成较高风险的情况","业务关系或交易涉及高风险司法管辖区","所有本地低风险零售兑换客户一律强制执行更严格尽职审查"],answer:0,tip:"1–3正确。"},
+      {id:28,module:6,stem:"有关就客户尽职审查及交易的备存纪录规定，下列哪项数据或资料须作备存之用？",items:["客户的实益拥有人的身分证明文件","任何已作分析的结果","客户的住址资料","客户的开户纪录"],answer:4,tip:"以上皆是。"},
+      {id:29,module:6,stem:"关于可疑交易报告，下列哪项正确？",items:["员工如知悉或怀疑交易涉及洗钱／恐怖融资，应按内部程序向洗钱报告主任报告","洗钱报告主任应考虑是否向财富情报组提交可疑交易报告","金钱服务经营者须防止向客户作出通风报讯","为免得罪客户，应先告知客户已就其交易作出可疑交易报告"],answer:0,tip:"1–3正确；告知客户属通风报讯。"},
+      {id:30,module:6,stem:"关于名单筛查及金融制裁管控，下列哪项正确？",items:["应设有程序对照适用的制裁／恐怖分子等名单进行筛查","筛查纪录应妥善备存","出现命中或可疑命中时，应有升级处理及跟进程序","只需在开业当日筛查一次，其后永不再更新名单或重做筛查"],answer:0,tip:"1–3正确。"},
+      {id:31,module:7,stem:"关于持牌人的定期申报责任，下列哪项正确？",items:["除关长另有指定外，须在每半年开始后的两星期内递交定期申报表","未能按时递交定期申报表，可导致牌照被暂时吊销及／或撤销","定期申报表须以关长指明的格式及方式递交","只需在申请续牌时才首次考虑是否递交申报表"],answer:0,tip:"1–3正确。"},
+      {id:32,module:7,stem:"下列哪些情况可导致关长撤销或暂时吊销金钱服务经营者牌照？",items:["持牌人、合伙人或董事等不再属适当人选","未能维持本地储存帐目及纪录地点或本地管理办事处（如适用）","未能委任或维持具备合资格的合规主任或洗钱报告主任","未能遵从条例所订规定，包括未按时报交定期申报表"],answer:4,tip:"以上皆是。"},
+      {id:33,module:7,stem:"关于独立检测／审核打击洗钱及恐怖分子资金筹集制度，下列哪项正确？",items:["目的是评估制度是否足够及有效运作","应向高级管理层汇报发现的缺失及跟进情况","可完全取代合规主任的日常监督职能","检测范围应与机构风险及业务性质相称"],answer:1,tip:"1、2、4正确；检测不能取代CO。"},
+      {id:34,module:7,stem:"为向有关当局证明符合打击洗钱／恐怖分子资金筹集规定，金钱服务经营者宜备存下列哪些材料？",items:["机构层面及客户层面的风险评估纪录","政策与程序、职员培训纪录、名单筛查及可疑交易相关档案","独立检测／审核报告及整改跟进纪录","仅备存宣传单张及营业额统计即可充分证明合规"],answer:0,tip:"1–3正确。"},
+      {id:35,module:7,stem:"关于能力评核成绩通知及覆检，下列哪项正确？",items:["成绩一般在考试结束后14日内以电邮通知，结果分为合格或不合格","如对成绩不满，可在发出成绩通知当日起计7日内书面要求覆检","海关在任何情况下均不会披露实际分数、试题及相关正确答案","能力评核合格即等同已符合全部发牌规定并保证获批牌照"],answer:0,tip:"1–3正确；合格不等于必然获牌。"},
+    ];
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return defaultState();
+        return {
+          answers: { ...Object.fromEntries(QUESTIONS.map(q => [String(q.id), null])), ...(parsed.answers || {}) },
+          submitted: !!parsed.submitted,
+          showTips: !!parsed.showTips,
+          onlyWrong: !!parsed.onlyWrong,
+          onlyBlank: !!parsed.onlyBlank,
+          filter: parsed.filter || 0,
+        };
+      } catch {
+        return defaultState();
+      }
+    }
+
+    function defaultState() {
+      return {
+        answers: Object.fromEntries(QUESTIONS.map(q => [String(q.id), null])),
+        submitted: false,
+        showTips: false,
+        onlyWrong: false,
+        onlyBlank: false,
+        filter: 0,
+      };
+    }
+
+    let state = loadState();
+
+    function saveState(showToast = true) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (showToast) {
+        const t = document.getElementById("toast");
+        t.classList.add("show");
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => t.classList.remove("show"), 900);
+      }
+      updateHeader();
+    }
+
+    function choicesOf(q) {
+      return q.variant === "stages" ? STAGES : STD;
+    }
+
+    function answeredCount() {
+      return QUESTIONS.filter(q => state.answers[String(q.id)] != null).length;
+    }
+
+    function moduleStats() {
+      return [1,2,3,4,5,6,7].map(mod => {
+        const qs = QUESTIONS.filter(q => q.module === mod);
+        const wrong = qs.filter(q => state.answers[String(q.id)] != null && state.answers[String(q.id)] !== q.answer).length;
+        const correct = qs.filter(q => state.answers[String(q.id)] === q.answer).length;
+        const blank = qs.filter(q => state.answers[String(q.id)] == null).length;
+        return { mod, wrong, correct, blank, ok: wrong <= 2 && blank === 0 };
+      });
+    }
+
+    function updateHeader() {
+      const n = answeredCount();
+      document.getElementById("sAnswered").textContent = `${n}/35`;
+      const btnSubmit = document.getElementById("btnSubmit");
+      btnSubmit.disabled = n < 35 || state.submitted;
+      document.getElementById("btnTips").hidden = !state.submitted;
+      document.getElementById("btnWrong").hidden = !state.submitted;
+      document.getElementById("btnContinue").hidden = state.submitted;
+      document.getElementById("btnTips").textContent = state.showTips ? "隐藏解析" : "显示解析";
+      document.getElementById("btnWrong").textContent = state.onlyWrong ? "显示全部题" : "只看错题";
+      document.getElementById("btnContinue").textContent = state.onlyBlank ? "显示全部题" : "只看未答题";
+
+      if (!state.submitted) {
+        document.getElementById("sScore").textContent = "—";
+        document.getElementById("sModules").textContent = "—";
+        document.getElementById("sResult").textContent = n ? "续做中" : "作答中";
+        document.getElementById("resultBox").hidden = true;
+        document.getElementById("saveNote").textContent =
+          n > 0
+            ? `已自动保存 ${n}/35。关掉再打开可继续；下一题可从「只看未答题」进入。`
+            : "进度会自动保存到本机浏览器。关掉页面再打开，可继续做。";
+        return;
+      }
+
+      const total = QUESTIONS.filter(q => state.answers[String(q.id)] === q.answer).length;
+      const mods = moduleStats();
+      const modulePass = mods.every(m => m.ok);
+      const pass = total >= 25 && modulePass;
+      document.getElementById("sScore").textContent = String(total);
+      document.getElementById("sModules").textContent = modulePass ? "达标" : "未达标";
+      document.getElementById("sResult").textContent = pass ? "合格" : "不合格";
+      const box = document.getElementById("resultBox");
+      box.hidden = false;
+      box.innerHTML =
+        `<b>分单元成绩</b><br>` +
+        mods.map(m =>
+          `单元${m.mod}：对 ${m.correct}／错 ${m.wrong}` +
+          (m.wrong > 2 ? `　← 本单元不及格` : "")
+        ).join("<br>") +
+        `<br><br><b>总评：${pass ? "合格" : "不合格"}</b>（须总分≥25，且每单元最多错2题）`;
+    }
+
+    function renderFilters() {
+      const el = document.getElementById("filters");
+      el.innerHTML = "";
+      const all = document.createElement("button");
+      all.textContent = "全部单元";
+      all.className = "chip" + (state.filter === 0 ? " on" : "");
+      all.onclick = () => { state.filter = 0; saveState(false); render(); };
+      el.appendChild(all);
+      for (let m = 1; m <= 7; m++) {
+        const b = document.createElement("button");
+        b.textContent = `单元${m}`;
+        b.className = "chip" + (state.filter === m ? " on" : "");
+        b.onclick = () => { state.filter = m; saveState(false); render(); };
+        el.appendChild(b);
+      }
+    }
+
+    function visibleQuestions() {
+      let list = state.filter === 0 ? QUESTIONS : QUESTIONS.filter(q => q.module === state.filter);
+      if (state.submitted && state.onlyWrong) list = list.filter(q => state.answers[String(q.id)] !== q.answer);
+      if (!state.submitted && state.onlyBlank) list = list.filter(q => state.answers[String(q.id)] == null);
+      return list;
+    }
+
+    function render() {
+      renderFilters();
+      updateHeader();
+      const paper = document.getElementById("paper");
+      paper.innerHTML = "";
+      const list = visibleQuestions();
+      let lastMod = null;
+      list.forEach(q => {
+        if (q.module !== lastMod) {
+          lastMod = q.module;
+          const h = document.createElement("div");
+          h.className = "mod-title";
+          h.textContent = MODULES[q.module - 1];
+          paper.appendChild(h);
+        }
+        const selected = state.answers[String(q.id)];
+        const card = document.createElement("div");
+        card.className = "q";
+        card.id = `q-${q.id}`;
+        const head = document.createElement("div");
+        head.className = "q-head";
+        const title = document.createElement("div");
+        title.innerHTML = `<b>${q.id}. ${q.stem}</b>`;
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        if (state.submitted && selected != null) {
+          const ok = selected === q.answer;
+          pill.className = "pill " + (ok ? "ok" : "bad");
+          pill.textContent = ok ? "正确" : `答案 ${KEYS[q.answer]}`;
+        } else if (selected != null) {
+          pill.className = "pill saved";
+          pill.textContent = "已保存";
+        } else {
+          pill.textContent = `第${q.id}题`;
+        }
+        head.appendChild(title);
+        head.appendChild(pill);
+        card.appendChild(head);
+
+        const items = document.createElement("div");
+        items.className = "items";
+        items.innerHTML = q.items.map((it, i) => `${i + 1}. ${it}`).join("<br>");
+        card.appendChild(items);
+
+        choicesOf(q).forEach((label, idx) => {
+          const btn = document.createElement("button");
+          btn.className = "choice";
+          btn.type = "button";
+          btn.textContent = label;
+          if (selected === idx) btn.classList.add("active");
+          if (state.submitted) {
+            if (idx === q.answer) btn.classList.add("correct");
+            if (selected === idx && idx !== q.answer) btn.classList.add("wrong");
+          } else {
+            btn.onclick = () => {
+              state.answers[String(q.id)] = idx;
+              saveState(true);
+              render();
+            };
+          }
+          card.appendChild(btn);
+        });
+
+        if (state.submitted && state.showTips) {
+          const tip = document.createElement("div");
+          tip.className = "tip";
+          tip.textContent = "解析：" + q.tip;
+          card.appendChild(tip);
+        }
+        paper.appendChild(card);
+      });
+    }
+
+    document.getElementById("btnSubmit").onclick = () => {
+      if (answeredCount() < 35) return;
+      state.submitted = true;
+      state.onlyBlank = false;
+      state.showTips = true;
+      saveState(false);
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    document.getElementById("btnTips").onclick = () => {
+      state.showTips = !state.showTips;
+      saveState(false);
+      render();
+    };
+
+    document.getElementById("btnWrong").onclick = () => {
+      state.onlyWrong = !state.onlyWrong;
+      saveState(false);
+      render();
+    };
+
+    document.getElementById("btnContinue").onclick = () => {
+      state.onlyBlank = !state.onlyBlank;
+      saveState(false);
+      render();
+    };
+
+    document.getElementById("btnReset").onclick = () => {
+      if (!confirm("确认清空全部进度并重做？此操作不可恢复。")) return;
+      state = defaultState();
+      saveState(false);
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    render();
+  </script>
+</body>
+</html>

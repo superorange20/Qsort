@@ -231,13 +231,59 @@
       {id:35,module:7,stem:"关于能力评核成绩，下列哪项正确？",items:["一般14日内以电邮通知合格或不合格","7日内可书面要求覆检","海关不披露实际分数及试题答案","合格即保证一定获批牌照"],answer:0,tip:"1–3正确；合格≠必获牌。"},
     ];
 
+    // Paper 3: another full official-style set
+    const PAPER3 = [
+      {id:1,module:1,stem:"关于洗钱的基本概念，下列哪项正确？",items:["洗钱旨在掩饰非法得益的来源、性质或去向","常见阶段包括存放、分层及整合","识别客户身分本身就是洗钱的必经阶段","从业员应提高对可疑模式的警觉"],answer:3,tip:"1、2、4正确；「识别」不是洗钱三阶段。"},
+      {id:2,module:1,stem:"恐怖分子资金筹集与洗钱的比较，下列哪项正确？",items:["恐怖融资的资金来源可以是合法的","两者都可能透过汇款或兑换渠道转移资金","金额小就必然没有恐怖融资风险","名单筛查有助识别相关风险人士"],answer:1,tip:"1、2、4正确；小额同样可有风险。"},
+      {id:3,module:1,stem:"关于金融制裁与扩散资金筹集，下列哪项正确？",items:["扩散资金筹集与大规模毁灭武器相关","MSO应把制裁／名单筛查纳入管控","发现命中后应停止并按程序升级处理","可先放行交易，待客户事后解释即可"],answer:0,tip:"1–3正确；不可先放行再说。"},
+      {id:4,module:1,stem:"下列哪些情况较可能属红旗指标？",items:["客户拒绝说明资金来源或交易目的","客户频繁更改收款人且无法合理解释","交易结构异常复杂却无商业理由","客户主动配合尽职审查并提供一致资料"],answer:0,tip:"1–3是红旗。"},
+      {id:5,module:1,stem:"风险为本方法的正确做法包括：",items:["按风险高低调配管控力度","高风险加强、低风险可按规定简化","定期覆核并更新风险评估","只在开业时评估一次即可永久沿用"],answer:0,tip:"1–3正确。"},
+
+      {id:6,module:2,stem:"关于MSO发牌，下列哪项正确？",items:["海关是规管金钱服务经营者的有关当局","经营前必须持有有效牌照","无牌经营可被检控","缴费后无论是否符合资格都会自动获批"],answer:0,tip:"1–3正确。"},
+      {id:7,module:2,stem:"适当人选判定适用于下列哪些人？",items:["个人申请人及最终拥有人","合伙的合伙人及最终拥有人","法团的董事及最终拥有人","仅限于前线柜员"],answer:0,tip:"1–3正确。"},
+      {id:8,module:2,stem:"持牌人须遵守下列哪些责任？",items:["在指明处所展示牌照","详情改变一个月内具报","停业前书面具报并在7日内交回牌照","任何改变都可完全不通知海关"],answer:0,tip:"1–3正确。"},
+      {id:9,module:2,stem:"关于续期安排，下列哪项正确？",items:["牌照通常有效两年","须在期满前45日或之前申请","海关约提前90日提示","收到提示后即使不申请也会自动续牌"],answer:0,tip:"1–3正确；不会自动续牌。"},
+      {id:10,module:2,stem:"下列哪些情况可导致申请被拒？",items:["有关人士不属适当人选","未通过／未应考能力评核","未委任合资格CO或MLRO","商业登记证有效即必然获批"],answer:0,tip:"1–3正确。"},
+
+      {id:11,module:3,stem:"须执行客户尽职审查的情况包括：",items:["建立业务关系前","非经常交易达$120,000或以上前","汇款／电传转帐达$8,000或以上前","怀疑洗钱／恐怖融资时"],answer:4,tip:"以上皆是。"},
+      {id:12,module:3,stem:"关于汇款资料及门槛，下列哪项正确？",items:["$8,000或以上汇款前须核实汇款人","应记录姓名、证件及地址等资料","有关连交易应合计审视是否达门槛","客户要求拆单规避时仍可照做且无须核验"],answer:0,tip:"1–3正确。"},
+      {id:13,module:3,stem:"备存纪录规定，下列哪项正确？",items:["交易纪录一般备存6年","客户纪录关系存续期间及终止后6年","关长可要求延长备存","只需备存至交易翌年年底"],answer:0,tip:"1–3正确。"},
+      {id:14,module:3,stem:"法人客户尽职审查，下列哪项正确？",items:["收集注册日期与地点","收集主要营业地点","识别并核证实益拥有人","公司秘书必然是强制识别资料项目"],answer:0,tip:"1–3正确。"},
+      {id:15,module:3,stem:"下列哪项关于户口及监察正确？",items:["禁止匿名户口","须持续监察交易是否符合客户状况","资料存疑时应加强／重做尽职审查","客户不愿提供身分时仍可先做大额汇款"],answer:0,tip:"1–3正确。"},
+
+      {id:16,module:4,stem:"机构风险评估应顾及：",items:["客户及目标市场","交付渠道","业务性质与复杂程度","只看广告投放金额"],answer:0,tip:"1–3正确。"},
+      {id:17,module:4,stem:"本地管理办事处规定，下列哪项正确？",items:["无特定处所经营时须维持LMO","须可供海关联络及亲访","须有合资格人士驻守","虚拟邮箱地址即可满足LMO要求"],answer:0,tip:"1–3正确。"},
+      {id:18,module:4,stem:"可疑交易举报制度应包括：",items:["委任MLRO","清晰内部及对外报告程序","防通风报讯安排","由前线先过滤掉大部分内部报告"],answer:0,tip:"1–3正确。"},
+      {id:19,module:4,stem:"CO／MLRO要求，下列哪项正确？",items:["CO监督AML制度","MLRO集中处理可疑交易报告","非兼任者须为正式雇员","挂名顾问从不在岗亦可"],answer:0,tip:"1–3正确。"},
+      {id:20,module:4,stem:"处所是否适合登记，下列哪项正确？",items:["纯住宅楼一般不适合","混合商住须有占用人书面同意","招牌名称应与商业登记一致","无法供海关进入的处所也可接受"],answer:0,tip:"1–3正确。"},
+
+      {id:21,module:5,stem:"高级管理层应负责：",items:["核准AML政策","确保资源投入","检视制度有效性","完全不参与任何合规事宜"],answer:0,tip:"1–3正确。"},
+      {id:22,module:5,stem:"能力评核候选人，下列哪项正确？",items:["须为高级管理层","同公司须同场考试","至少一人合格","任何临时工都可代表公司应考"],answer:0,tip:"1–3正确。"},
+      {id:23,module:5,stem:"及格标准，下列哪项正确？",items:["35题／75分钟","7单元各5题","总分≥25且每单元最多错2","只看总分不管单元"],answer:0,tip:"双门槛缺一不可。"},
+      {id:24,module:5,stem:"机构管治要素通常包括：",items:["成文政策程序","委任CO／MLRO","独立检测安排","零书面纪录的「口头文化」即可"],answer:0,tip:"1–3正确。"},
+      {id:25,module:5,stem:"新申请评核时限，下列哪项正确？",items:["会面后30日内应考","不及格约30日后可再考","未考／不合格可致拒批","可当天无限次重考"],answer:0,tip:"1–3正确。"},
+
+      {id:26,module:6,stem:"客户尽职审查措施包括：",items:["识别核证客户","识别核证实益拥有人","了解业务关系目的／性质","持续监察"],answer:4,tip:"以上皆是。"},
+      {id:27,module:6,stem:"更严格尽职审查较适用于：",items:["高风险客户","高风险PEP情况","高风险地区相关业务","所有低风险偶发兑换一律强制"],answer:0,tip:"1–3正确。"},
+      {id:28,module:6,stem:"应备存的尽职审查／交易资料包括：",items:["实益拥有人证件","分析结果","住址及开户／交易纪录","只保留收银机小票金额"],answer:0,tip:"1–3正确。"},
+      {id:29,module:6,stem:"可疑交易处理，下列哪项正确？",items:["向MLRO内部报告","MLRO考虑向财富情报组举报","禁止通风报讯","先通知客户方便其改口供"],answer:0,tip:"1–3正确。"},
+      {id:30,module:6,stem:"制裁名单筛查，下列哪项正确？",items:["应对相关方筛查","备存纪录","命中要升级处理","开业筛一次永久有效"],answer:0,tip:"1–3正确。"},
+
+      {id:31,module:7,stem:"定期申报，下列哪项正确？",items:["每半年开始后两星期内递交","逾期可暂吊／撤销","须用指定格式","可数年不交也无影响"],answer:0,tip:"1–3正确。"},
+      {id:32,module:7,stem:"可导致暂吊／撤销的情况包括：",items:["不再属适当人选","未维持纪录地点或LMO","未维持CO／MLRO","未按时报送定期申报"],answer:4,tip:"以上皆是。"},
+      {id:33,module:7,stem:"独立检测的正确理解是：",items:["评估制度是否有效","向管理层汇报并跟进","范围应与风险相称","可完全取代CO"],answer:0,tip:"1–3正确。"},
+      {id:34,module:7,stem:"证明合规的材料宜包括：",items:["风险评估","培训／筛查／STR档案","检测与整改纪录","仅保留宣传单张"],answer:0,tip:"1–3正确。"},
+      {id:35,module:7,stem:"成绩通知与覆检，下列哪项正确？",items:["约14日电邮通知合格／不合格","7日内可书面覆检","不披露实际分数与试题","合格即必然获牌"],answer:0,tip:"1–3正确；合格≠必获牌。"},
+    ];
+
     const PAPERS = {
       1: { name: "模拟卷一", storage: "mso_exam_v1_orange", questions: PAPER1 },
-      2: { name: "模拟卷二（新）", storage: "mso_exam_v2_orange", questions: PAPER2 },
+      2: { name: "模拟卷二", storage: "mso_exam_v2_orange", questions: PAPER2 },
+      3: { name: "模拟卷三（新）", storage: "mso_exam_v3_orange", questions: PAPER3 },
     };
 
-    let paperId = Number(localStorage.getItem("mso_exam_active_paper") || "2");
-    if (![1, 2].includes(paperId)) paperId = 2;
+    let paperId = Number(localStorage.getItem("mso_exam_active_paper") || "3");
+    if (![1, 2, 3].includes(paperId)) paperId = 3;
 
     function questions() { return PAPERS[paperId].questions; }
     function storageKey() { return PAPERS[paperId].storage; }
@@ -306,7 +352,7 @@
     function updateHeader() {
       document.getElementById("title").textContent = `MSO 能力评核 · ${PAPERS[paperId].name}`;
       document.getElementById("subtitle").textContent =
-        "35题 · 7单元 · 官方组合题型 · 两套试卷进度分开保存";
+        "35题 · 7单元 · 官方组合题型 · 各套试卷进度分开保存";
 
       const n = answeredCount();
       document.getElementById("sAnswered").textContent = `${n}/35`;
@@ -327,7 +373,7 @@
         document.getElementById("saveNote").textContent =
           n > 0
             ? `${PAPERS[paperId].name} 已自动保存 ${n}/35。关掉再打开可继续。`
-            : `当前是${PAPERS[paperId].name}。进度保存在本机浏览器；卷一／卷二互不影响。`;
+            : `当前是${PAPERS[paperId].name}。进度保存在本机浏览器；各套试卷互不影响。`;
         return;
       }
 
@@ -352,7 +398,7 @@
     function renderPaperTabs() {
       const el = document.getElementById("paperTabs");
       el.innerHTML = "";
-      [1, 2].forEach(id => {
+      [1, 2, 3].forEach(id => {
         const b = document.createElement("button");
         b.className = "chip" + (paperId === id ? " on" : "");
         b.textContent = PAPERS[id].name;

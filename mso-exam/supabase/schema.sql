@@ -3,7 +3,7 @@
 
 create table if not exists public.exam_states (
   user_id uuid not null references auth.users(id) on delete cascade,
-  paper_id integer not null check (paper_id between 1 and 7),
+  paper_id integer not null check (paper_id between 1 and 20),
   state jsonb not null,
   updated_at timestamptz not null default now(),
   primary key (user_id, paper_id)
@@ -12,7 +12,7 @@ create table if not exists public.exam_states (
 create table if not exists public.exam_history (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  paper_id integer not null check (paper_id between 1 and 7),
+  paper_id integer not null check (paper_id between 1 and 20),
   paper_name text not null,
   score integer not null check (score between 0 and 35),
   passed boolean not null,
@@ -31,9 +31,9 @@ alter table public.exam_history enable row level security;
 
 -- Expand the paper ID range for existing installations as well as fresh installs.
 alter table public.exam_states drop constraint if exists exam_states_paper_id_check;
-alter table public.exam_states add constraint exam_states_paper_id_check check (paper_id between 1 and 7);
+alter table public.exam_states add constraint exam_states_paper_id_check check (paper_id between 1 and 20);
 alter table public.exam_history drop constraint if exists exam_history_paper_id_check;
-alter table public.exam_history add constraint exam_history_paper_id_check check (paper_id between 1 and 7);
+alter table public.exam_history add constraint exam_history_paper_id_check check (paper_id between 1 and 20);
 
 -- Grant table privileges to signed-in users. RLS policies below still
 -- restrict every row to auth.uid() = user_id.

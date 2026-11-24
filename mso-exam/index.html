@@ -508,7 +508,7 @@
     function updateHeader() {
       document.getElementById("title").textContent = `MSO 能力评核 · ${PAPERS[paperId].name}`;
       document.getElementById("subtitle").textContent =
-        "35题 · 7单元 · 官方组合题型 · 各套试卷进度分开保存";
+        "35题 · 7单元 · 本地自动保存，登录后云端同步";
 
       const n = answeredCount();
       document.getElementById("sAnswered").textContent = `${n}/35`;
@@ -706,7 +706,8 @@
       questions: (id) => PAPERS[id].questions,
       paperName: (id) => PAPERS[id].name,
       applyState: (id, cloudState) => {
-        if (PAPERS[id]) localStorage.setItem(PAPERS[id].storage, JSON.stringify(cloudState));
+        if (PAPERS[id] && cloudState) localStorage.setItem(PAPERS[id].storage, JSON.stringify(cloudState));
+        else if (PAPERS[id]) localStorage.removeItem(PAPERS[id].storage);
         if (id === paperId) { state = loadState(); render(); }
       }
     });

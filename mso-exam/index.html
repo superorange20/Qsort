@@ -103,6 +103,13 @@
       z-index: 50;
     }
     .toast.show { opacity: 1; }
+    .cloud-panel { border: 1px solid var(--line); background: #151922; border-radius: 12px; padding: 10px; margin: 8px 0 12px; }
+    .cloud-panel input { width: 100%; margin: 5px 0; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: #0f1115; color: var(--text); }
+    .cloud-status { color: var(--muted); font-size: .82rem; margin: 5px 0; }
+    .cloud-status.ok { color: var(--ok); } .cloud-status.error { color: var(--bad); } .cloud-status.warn { color: #e5bd63; }
+    .history-row { display:flex; justify-content:space-between; gap:10px; border-top:1px solid var(--line); padding:7px 0; font-size:.82rem; }
+    .history-row small { display:block; color:var(--muted); } .passed { color:var(--ok); white-space:nowrap; } .failed { color:var(--bad); white-space:nowrap; }
+    .muted { color: var(--muted); }
   </style>
 </head>
 <body>
@@ -110,6 +117,19 @@
     <div class="bar">
       <h1 id="title">MSO 能力评核模拟试卷</h1>
       <div class="sub" id="subtitle">35题 · 7单元 · 官方组合题型 · 进度自动保存在本机浏览器</div>
+      <section class="cloud-panel" aria-label="云端账号与同步">
+        <b>云端账号 / 跨设备同步</b>
+        <div id="cloudStatus" class="cloud-status">正在检查云端配置…</div>
+        <div id="cloudAuthForm">
+          <input id="cloudEmail" type="email" autocomplete="email" placeholder="邮箱地址" />
+          <input id="cloudPassword" type="password" autocomplete="current-password" placeholder="密码（至少8位）" />
+          <div class="actions"><button class="primary" id="cloudLogin" type="button">登录</button><button id="cloudSignup" type="button">注册新账号</button></div>
+        </div>
+        <div id="cloudSignedIn" hidden>
+          <div class="actions" style="align-items:center"><span id="cloudUser"></span><button id="cloudLogout" type="button">退出登录</button><button id="cloudRefreshHistory" type="button">刷新历史</button></div>
+          <div id="cloudHistory" style="margin-top:8px"></div>
+        </div>
+      </section>
       <div class="actions" id="paperTabs" style="margin-bottom:10px"></div>
       <div class="stats">
         <div class="stat"><b id="sAnswered">0/35</b><span>已作答</span></div>
@@ -133,6 +153,9 @@
   </div>
   <div class="toast" id="toast">已保存</div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
+  <script src="./cloud-sync.js"></script>
   <script>
     const STD = ["a) 1、2及3", "b) 1、2及4", "c) 2、3及4", "d) 1、3及4", "e) 以上皆是"];
     const STAGES = ["a) 1、2及3", "b) 2、3及4", "c) 1、3及4", "d) 1、2及5", "e) 3、4及5"];
@@ -454,6 +477,7 @@
     function saveState(showToast = true) {
       localStorage.setItem(storageKey(), JSON.stringify(state));
       localStorage.setItem("mso_exam_active_paper", String(paperId));
+      if (window.QsortCloud) window.QsortCloud.queueSave(paperId, state);
       if (showToast) {
         const t = document.getElementById("toast");
         t.classList.add("show");
@@ -648,6 +672,7 @@
       state.onlyBlank = false;
       state.showTips = true;
       saveState(false);
+      if (window.QsortCloud) window.QsortCloud.recordSubmission(paperId, state);
       render();
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -675,6 +700,16 @@
     };
 
     render();
+    if (window.QsortCloud) window.QsortCloud.init({
+      storageKey: (id) => PAPERS[id].storage,
+      getActivePaper: () => paperId,
+      questions: (id) => PAPERS[id].questions,
+      paperName: (id) => PAPERS[id].name,
+      applyState: (id, cloudState) => {
+        if (PAPERS[id]) localStorage.setItem(PAPERS[id].storage, JSON.stringify(cloudState));
+        if (id === paperId) { state = loadState(); render(); }
+      }
+    });
   </script>
 </body>
 </html>

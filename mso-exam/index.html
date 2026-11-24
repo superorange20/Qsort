@@ -110,6 +110,9 @@
     .history-row { display:flex; justify-content:space-between; gap:10px; border-top:1px solid var(--line); padding:7px 0; font-size:.82rem; }
     .history-row small { display:block; color:var(--muted); } .passed { color:var(--ok); white-space:nowrap; } .failed { color:var(--bad); white-space:nowrap; }
     .muted { color: var(--muted); }
+    .wrongbook-card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px; }
+    .wrongbook-meta { color:var(--muted); font-size:.8rem; margin-bottom:8px; }
+    .wrongbook-answer { margin-top:9px; color:var(--ok); font-size:.88rem; }
   </style>
 </head>
 <body>
@@ -141,6 +144,7 @@
       <div class="actions" style="margin-top:8px">
         <button class="primary" id="btnSubmit" disabled>交卷并计分</button>
         <button id="btnTips" hidden>显示解析</button>
+        <button id="btnWrongBook" type="button">错题本</button>
         <button id="btnWrong" hidden>只看错题</button>
         <button id="btnContinue">只看未答题</button>
         <button id="btnReset">清空重做…</button>
@@ -451,6 +455,7 @@
         onlyWrong: false,
         onlyBlank: false,
         filter: 0,
+        wrongBook: [],
       };
     }
 
@@ -466,6 +471,7 @@
           onlyWrong: !!parsed.onlyWrong,
           onlyBlank: !!parsed.onlyBlank,
           filter: parsed.filter || 0,
+          wrongBook: Array.isArray(parsed.wrongBook) ? parsed.wrongBook : [],
         };
       } catch {
         return defaultState();
@@ -519,6 +525,8 @@
       document.getElementById("btnContinue").hidden = state.submitted;
       document.getElementById("btnTips").textContent = state.showTips ? "隐藏解析" : "显示解析";
       document.getElementById("btnWrong").textContent = state.onlyWrong ? "显示全部题" : "只看错题";
+      document.getElementById("btnWrongBook").textContent = "错题本（" + getAllWrongBook().length + "）";
+      document.getElementById("btnWrongBook").classList.toggle("primary", wrongBookView);
       document.getElementById("btnContinue").textContent = state.onlyBlank ? "显示全部题" : "只看未答题";
 
       if (!state.submitted) {
@@ -586,6 +594,71 @@
       }
     }
 
+
+    let wrongBookView = false;
+    function getAllWrongBook() {
+      const all = [];
+      [1,2,3,4,5,6].forEach(id => {
+        try {
+          const raw = localStorage.getItem(PAPERS[id].storage), saved = raw ? JSON.parse(raw) : null;
+          (saved && Array.isArray(saved.wrongBook) ? saved.wrongBook : []).forEach(item => all.push(item));
+        } catch {}
+      });
+      return all.sort((a,b) => String(b.addedAt || "").localeCompare(String(a.addedAt || "")));
+    }
+    function savePaperWrongBook(id, paperState) {
+      localStorage.setItem(PAPERS[id].storage, JSON.stringify(paperState));
+      if (window.QsortCloud) window.QsortCloud.queueSave(id, paperState);
+      if (id === paperId) state = paperState;
+    }
+    function addWrongBookFromSubmission() {
+      if (!Array.isArray(state.wrongBook)) state.wrongBook = [];
+      questions().forEach(q => {
+        const chosen = state.answers[String(q.id)];
+        if (chosen == null || chosen === q.answer) return;
+        const existing = state.wrongBook.find(item => item.questionId === q.id && item.paperId === paperId);
+        if (existing) { existing.selectedAnswer = chosen; existing.attempts = Number(existing.attempts || 1) + 1; }
+        else state.wrongBook.push({paperId:paperId,questionId:q.id,selectedAnswer:chosen,addedAt:new Date().toISOString(),attempts:1});
+      });
+    }
+    function renderWrongBook() {
+      const host = document.getElementById("paper"); host.innerHTML = "";
+      const items = getAllWrongBook();
+      const heading = document.createElement("h2"); heading.className = "mod-title";
+      heading.textContent = "我的错题本 · " + items.length + " 题"; host.appendChild(heading);
+      const intro = document.createElement("div"); intro.className = "note";
+      intro.textContent = "交卷后答错的题目会自动收录。重新作答正确后，该题会自动从错题本移除；错题本会随登录账号同步。"; host.appendChild(intro);
+      if (!items.length) { const empty=document.createElement("div"); empty.className="note ok"; empty.textContent="目前没有错题，继续保持！"; host.appendChild(empty); return; }
+      items.forEach(item => {
+        const source=PAPERS[item.paperId], q=source && source.questions.find(question=>question.id===item.questionId); if(!q)return;
+        const card=document.createElement("section"); card.className="wrongbook-card";
+        const meta=document.createElement("div"); meta.className="wrongbook-meta";
+        meta.textContent=source.name+" · 第"+q.id+"题 · 单元"+q.module+" · 已练习"+(item.attempts||1)+"次"; card.appendChild(meta);
+        const title=document.createElement("div"), strong=document.createElement("b"); strong.textContent=q.stem; title.appendChild(strong); card.appendChild(title);
+        q.items.forEach((text,index)=>{const line=document.createElement("div");line.className="items";line.textContent=(index+1)+". "+text;card.appendChild(line);});
+        choicesOf(q).forEach((label,index)=>{
+          const choice=document.createElement("button");choice.type="button";choice.className="choice";choice.textContent=label;
+          if(item.selectedAnswer===index)choice.classList.add("wrong");
+          choice.onclick=()=>{
+            const raw=localStorage.getItem(source.storage),saved=raw?JSON.parse(raw):{},list=Array.isArray(saved.wrongBook)?saved.wrongBook:[];
+            const target=list.find(entry=>entry.paperId===item.paperId&&entry.questionId===item.questionId);if(!target)return;
+            if(index===q.answer){saved.wrongBook=list.filter(entry=>!(entry.paperId===item.paperId&&entry.questionId===item.questionId));savePaperWrongBook(item.paperId,saved);showToastMessage("答对了，已从错题本移除");}
+            else{target.selectedAnswer=index;target.attempts=Number(target.attempts||1)+1;target.lastAttemptAt=new Date().toISOString();savePaperWrongBook(item.paperId,saved);showToastMessage("再想一想，答案还不正确");}
+            render();
+          };card.appendChild(choice);
+        });
+        const answer=document.createElement("div");answer.className="wrongbook-answer";
+        answer.textContent="正确答案："+choicesOf(q)[q.answer]+"　解析："+(q.tip||"暂无解析");card.appendChild(answer);
+        const remove=document.createElement("button");remove.type="button";remove.textContent="从错题本移除";remove.style.marginTop="10px";
+        remove.onclick=()=>{const raw=localStorage.getItem(source.storage),saved=raw?JSON.parse(raw):{};saved.wrongBook=(Array.isArray(saved.wrongBook)?saved.wrongBook:[]).filter(entry=>!(entry.paperId===item.paperId&&entry.questionId===item.questionId));savePaperWrongBook(item.paperId,saved);render();};
+        card.appendChild(remove);host.appendChild(card);
+      });
+    }
+    function showToastMessage(message) {
+      const toast=document.getElementById("toast");toast.textContent=message;toast.classList.add("show");
+      clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>toast.classList.remove("show"),1400);
+    }
+
     function visibleQuestions() {
       let list = state.filter === 0 ? questions() : questions().filter(q => q.module === state.filter);
       if (state.submitted && state.onlyWrong) list = list.filter(q => state.answers[String(q.id)] !== q.answer);
@@ -598,6 +671,7 @@
       renderFilters();
       updateHeader();
       const paper = document.getElementById("paper");
+      if (wrongBookView) { renderWrongBook(); return; }
       paper.innerHTML = "";
       const list = visibleQuestions();
       let lastMod = null;
@@ -666,10 +740,12 @@
       });
     }
 
+    document.getElementById("btnWrongBook").onclick = () => { wrongBookView = !wrongBookView; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
     document.getElementById("btnSubmit").onclick = () => {
       if (answeredCount() < 35) return;
       state.submitted = true;
       state.onlyBlank = false;
+      addWrongBookFromSubmission();
       state.showTips = true;
       saveState(false);
       if (window.QsortCloud) window.QsortCloud.recordSubmission(paperId, state);
@@ -693,7 +769,9 @@
     };
     document.getElementById("btnReset").onclick = () => {
       if (!confirm(`确认清空「${PAPERS[paperId].name}」全部进度并重做？`)) return;
+      const retainedWrongBook = Array.isArray(state.wrongBook) ? state.wrongBook : [];
       state = defaultState();
+      state.wrongBook = retainedWrongBook;
       saveState(false);
       render();
       window.scrollTo({ top: 0, behavior: "smooth" });

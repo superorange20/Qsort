@@ -99,6 +99,9 @@
         .select("paper_id,state,updated_at").eq("user_id", user.id);
       if (error) throw error;
       const remote = new Map((data || []).map((row) => [row.paper_id, row]));
+      const ownerKey = "mso_cloud_owner_user_id";
+      const previousOwner = localStorage.getItem(ownerKey);
+      const mayMigrateLocal = !previousOwner || previousOwner === user.id;
       for (let id = 1; id <= 6; id++) {
         const key = opts.storageKey(id);
         const localRaw = localStorage.getItem(key);
@@ -107,7 +110,7 @@
         if (cloudRow) {
           localStorage.setItem(key, JSON.stringify(cloudRow.state));
           if (id === opts.getActivePaper()) opts.applyState(id, cloudRow.state);
-        } else if (localState) {
+        } else if (localState && mayMigrateLocal) {
           const { error: writeError } = await client.from("exam_states").upsert({
             user_id: user.id, paper_id: id, state: localState, updated_at: new Date().toISOString()
           }, { onConflict: "user_id,paper_id" });
@@ -115,8 +118,15 @@
           if (localState.submitted) {
             await saveHistory(id, localState, "legacy-paper-" + id);
           }
+        } else if (previousOwner && previousOwner !== user.id) {
+          // Never transfer another account's local data into this account.
+          localStorage.removeItem(key);
         }
       }
+      localStorage.setItem(ownerKey, user.id);
+      const activeId = opts.getActivePaper();
+      const activeRaw = localStorage.getItem(opts.storageKey(activeId));
+      opts.applyState(activeId, activeRaw ? JSON.parse(activeRaw) : null);
       await loadHistory();
       status("云端同步完成 · " + user.email, "ok");
     } catch (error) {

@@ -29,6 +29,12 @@ create index if not exists exam_history_user_completed_idx
 alter table public.exam_states enable row level security;
 alter table public.exam_history enable row level security;
 
+-- Grant table privileges to signed-in users. RLS policies below still
+-- restrict every row to auth.uid() = user_id.
+grant select, insert, update, delete on table public.exam_states to authenticated;
+grant select, insert, delete on table public.exam_history to authenticated;
+
+
 drop policy if exists "Users can read their own exam states" on public.exam_states;
 create policy "Users can read their own exam states"
   on public.exam_states for select to authenticated

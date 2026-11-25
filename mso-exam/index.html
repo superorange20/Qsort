@@ -527,7 +527,7 @@
     };
 
     let paperId = Number(localStorage.getItem("mso_exam_active_paper") || "5");
-    if (!Object.prototype.hasOwnProperty.call(PAPERS, paperId)) paperId = 5;
+    if (!Number.isInteger(paperId) || paperId < 1 || paperId > 20 || !Object.prototype.hasOwnProperty.call(PAPERS, paperId)) paperId = 5;
 
     function questions() { return PAPERS[paperId].questions; }
     function storageKey() { return PAPERS[paperId].storage; }
@@ -647,7 +647,8 @@
     function renderPaperTabs() {
       const el = document.getElementById("paperTabs");
       el.innerHTML = "";
-      Object.keys(PAPERS).map(Number).forEach(id => {
+      Array.from({ length: 20 }, (_, i) => i + 1).forEach(id => {
+        if (!PAPERS[id]) return;
         const b = document.createElement("button");
         b.className = "chip" + (paperId === id ? " on" : "");
         b.textContent = PAPERS[id].name;
@@ -683,7 +684,8 @@
     let wrongBookView = false;
     function getAllWrongBook() {
       const all = [];
-      Object.keys(PAPERS).map(Number).forEach(id => {
+      Array.from({ length: 20 }, (_, i) => i + 1).forEach(id => {
+        if (!PAPERS[id]) return;
         try {
           const raw = localStorage.getItem(PAPERS[id].storage), saved = raw ? JSON.parse(raw) : null;
           (saved && Array.isArray(saved.wrongBook) ? saved.wrongBook : []).forEach(item => all.push(item));

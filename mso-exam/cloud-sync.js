@@ -93,7 +93,7 @@
   async function syncFromCloud() {
     if (!client || !user || syncing) return;
     syncing = true;
-    status("正在同步十套试卷的数据…");
+    status("正在同步最多二十套试卷的数据…");
     try {
       const { data, error } = await client.from("exam_states")
         .select("paper_id,state,updated_at").eq("user_id", user.id);
@@ -102,7 +102,8 @@
       const ownerKey = "mso_cloud_owner_user_id";
       const previousOwner = localStorage.getItem(ownerKey);
       const mayMigrateLocal = !previousOwner || previousOwner === user.id;
-      for (let id = 1; id <= 10; id++) {
+      for (let id = 1; id <= 20; id++) {
+        if (!opts.questions(id) || !opts.storageKey(id)) continue;
         const key = opts.storageKey(id);
         const localRaw = localStorage.getItem(key);
         const localState = localRaw ? JSON.parse(localRaw) : null;

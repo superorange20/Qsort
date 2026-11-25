@@ -43,6 +43,8 @@
     .stat b { display: block; font-size: 1.05rem; }
     .stat span { color: var(--muted); font-size: 0.75rem; }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    #paperTabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+    #paperTabs .chip { flex: 0 0 auto; min-width: 38px; padding: 7px 11px; }
     button, .chip {
       border: 1px solid var(--line);
       background: var(--card);
@@ -514,16 +516,16 @@
     ];
 
     const PAPERS = {
-      1: { name: "模拟卷一", storage: "mso_exam_v1_orange", questions: PAPER1 },
-      2: { name: "模拟卷二", storage: "mso_exam_v2_orange", questions: PAPER2 },
-      3: { name: "模拟卷三", storage: "mso_exam_v3_orange", questions: PAPER3 },
-      4: { name: "模拟卷四（难）", storage: "mso_exam_v4_orange", questions: PAPER4 },
-      5: { name: "模拟卷五（官方标准）", storage: "mso_exam_v5_orange", questions: PAPER5 },
-      6: { name: "模拟卷六（情境综合）", storage: "mso_exam_v6_orange", questions: PAPER6 },
-      7: { name: "模拟卷七（高难度综合）", storage: "mso_exam_v7_orange", questions: PAPER7 },
-      8: { name: "模拟卷八（官方长题干组合题）", storage: "mso_exam_v8_orange", questions: PAPER8 },
-      9: { name: "模拟卷九（牌照法规与监管实务）", storage: "mso_exam_v9_orange", questions: PAPER9 },
-      10: { name: "模拟卷十（CDD与风险监控进阶）", storage: "mso_exam_v10_orange", questions: PAPER10 },
+      1: { name: "1", storage: "mso_exam_v1_orange", questions: PAPER1 },
+      2: { name: "2", storage: "mso_exam_v2_orange", questions: PAPER2 },
+      3: { name: "3", storage: "mso_exam_v3_orange", questions: PAPER3 },
+      4: { name: "4", storage: "mso_exam_v4_orange", questions: PAPER4 },
+      5: { name: "5", storage: "mso_exam_v5_orange", questions: PAPER5 },
+      6: { name: "6", storage: "mso_exam_v6_orange", questions: PAPER6 },
+      7: { name: "7", storage: "mso_exam_v7_orange", questions: PAPER7 },
+      8: { name: "8", storage: "mso_exam_v8_orange", questions: PAPER8 },
+      9: { name: "9", storage: "mso_exam_v9_orange", questions: PAPER9 },
+      10: { name: "10", storage: "mso_exam_v10_orange", questions: PAPER10 },
     };
 
     let paperId = Number(localStorage.getItem("mso_exam_active_paper") || "5");

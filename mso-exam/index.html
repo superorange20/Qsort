@@ -163,6 +163,7 @@
   <script src="./supabase-config.js"></script>
   <script src="./cloud-sync.js"></script>
   <script src="./papers-9-10.js"></script>
+  <script src="./paper-13.js"></script>
   <script>
     const STD = ["a) 1、2及3", "b) 1、2及4", "c) 2、3及4", "d) 1、3及4", "e) 以上皆是"];
     const STAGES = ["a) 1、2及3", "b) 2、3及4", "c) 1、3及4", "d) 1、2及5", "e) 3、4及5"];
@@ -526,6 +527,7 @@
       8: { name: "8", storage: "mso_exam_v8_orange", questions: PAPER8 },
       9: { name: "9", storage: "mso_exam_v9_orange", questions: PAPER9 },
       10: { name: "10", storage: "mso_exam_v10_orange", questions: PAPER10 },
+      13: { name: "13", storage: "mso_exam_v13_orange", questions: PAPER13 },
     };
 
     let paperId = Number(localStorage.getItem("mso_exam_active_paper") || "5");
